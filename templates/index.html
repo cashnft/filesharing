@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="upload-form">
+    <h2>Upload a File</h2>
+    <p>Files are encrypted before upload and can be password protected.</p>
+    
+    <form id="file-upload-form">
+        <div class="form-group">
+            <label for="file">Select File</label>
+            <input type="file" id="file" name="file" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password Protection (Optional)</label>
+            <input type="password" id="password" name="password" placeholder="Leave empty for no password">
+        </div>
+        
+        <div class="form-group">
+            <label for="max-downloads">Maximum Downloads (Optional)</label>
+            <input type="number" id="max-downloads" name="max_downloads" placeholder="Unlimited if empty" min="1">
+        </div>
+        
+        <div class="form-group">
+            <label for="expire-days">Expire After (Days)</label>
+            <input type="number" id="expire-days" name="expire_days" value="7" min="1" max="30">
+        </div>
+        
+        <button type="submit" class="button-primary">Upload & Encrypt</button>
+    </form>
+    
+    <div id="result" style="display: none; margin-top: 2rem;">
+        <h3>File Uploaded Successfully!</h3>
+        <p>Share this link with others to download your file:</p>
+        <div class="form-group">
+            <input type="text" id="download-link" readonly>
+            <button id="copy-link" class="button">Copy Link</button>
+        </div>
+        <p>Remember:</p>
+        <ul>
+            <li>The link will expire after the specified time or downloads</li>
+            <li>If you set a password, you'll need to share it separately</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('file-upload-form');
+    const result = document.getElementById('result');
+    const downloadLink = document.getElementById('download-link');
+    const copyButton = document.getElementById('copy-link');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show result
+                form.style.display = 'none';
+                result.style.display = 'block';
+                downloadLink.value = data.download_link;
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            alert('Upload failed: ' + error.message);
+        }
+    });
+    
+    copyButton.addEventListener('click', function() {
+        downloadLink.select();
+        document.execCommand('copy');
+        copyButton.textContent = 'Copied!';
+        setTimeout(() => {
+            copyButton.textContent = 'Copy Link';
+        }, 2000);
+    });
+});
+</script>
+{% endblock %}

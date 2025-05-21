@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="download-page">
+    <h2>Download File</h2>
+    
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% else %}
+    <p>You're downloading: <strong>{{ file.filename }}</strong></p>
+    
+    {% if file.max_downloads %}
+    <p>Downloads remaining: {{ file.max_downloads - file.download_count }}</p>
+    {% endif %}
+    
+    {% if file.expires_at %}
+    <p>Expires on: {{ file.expires_at.strftime('%Y-%m-%d at %H:%M UTC') }}</p>
+    {% endif %}
+    
+    <form id="download-form" action="{{ url_for('routes.download_file', file_id=file.id, access_key=request.args.get('access_key')) }}" method="post">
+        {% if file.password_protected %}
+        <div class="form-group">
+            <label for="password">This file is password protected</label>
+            <input type="password" id="password" name="password" required placeholder="Enter password to decrypt">
+        </div>
+        {% endif %}
+        
+        <button type="submit" class="button-primary">Download File</button>
+    </form>
+    
+    <div id="download-error" class="alert alert-danger" style="display: none; margin-top: 1rem;"></div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('download-form');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            // Regular form submission for downloads
+            // No need to prevent default since we want to download the file
+        });
+    }
+});
+</script>
+{% endblock %}
